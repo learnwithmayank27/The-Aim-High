@@ -268,7 +268,7 @@ function StudentDashboardContent() {
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(live.scheduledTime).toLocaleDateString()}</p>
                             <p className="text-[10px] text-slate-500 mt-0.5">{new Date(live.scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({live.durationMins} mins)</p>
                           </div>
-                          <a href={live.link} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs hover:bg-slate-800 transition-all flex items-center">
+                          <a href={live.link} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/95 transition-all flex items-center cursor-pointer">
                             Join Class <ArrowRight size={12} className="ml-1" />
                           </a>
                         </div>
@@ -337,7 +337,7 @@ function StudentDashboardContent() {
                       <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                         <span className="text-[10px] text-slate-500">Due: {new Date(inv.dueDate).toLocaleDateString()}</span>
                         {inv.status === 'PENDING' && (
-                          <button onClick={() => setSelectedInvoice(inv)} className="px-3 py-1.5 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-[10px] hover:bg-slate-800 transition-all">
+                          <button onClick={() => setSelectedInvoice(inv)} className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-bold text-[10px] hover:bg-primary/95 transition-all cursor-pointer">
                             Pay Online
                           </button>
                         )}
@@ -403,7 +403,7 @@ function StudentDashboardContent() {
                     className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
                   />
                 </div>
-                <button type="submit" className="w-full h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center space-x-2 cursor-pointer">
+                <button type="submit" className="w-full h-10 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                   <Upload size={14} />
                   <span>Submit Solutions</span>
                 </button>
@@ -463,7 +463,7 @@ function StudentDashboardContent() {
                       <a href={p.fileUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200">
                         View PDF
                       </a>
-                      <button onClick={() => setSolvingPaperId(p.id)} className="px-3 py-2 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs">
+                      <button onClick={() => setSolvingPaperId(p.id)} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer">
                         Submit Solution
                       </button>
                     </div>
@@ -488,7 +488,7 @@ function StudentDashboardContent() {
                   />
                 </div>
                 <div className="flex space-x-2">
-                  <button type="submit" className="flex-1 h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs cursor-pointer">Submit</button>
+                  <button type="submit" className="flex-1 h-10 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer">Submit</button>
                   <button type="button" onClick={() => setSolvingPaperId(null)} className="px-4 h-10 rounded-lg bg-slate-100 text-slate-500 text-xs cursor-pointer">Cancel</button>
                 </div>
               </form>
@@ -556,7 +556,7 @@ function StudentDashboardContent() {
                 <div className="flex items-center space-x-3">
                   <span className={`px-2 py-1 rounded text-xs font-bold border ${inv.status === 'PAID' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>{inv.status}</span>
                   {inv.status === 'PENDING' && (
-                    <button onClick={() => setSelectedInvoice(inv)} className="px-4 py-2 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs">
+                    <button onClick={() => setSelectedInvoice(inv)} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs cursor-pointer">
                       Pay Bill
                     </button>
                   )}
@@ -592,7 +592,7 @@ function StudentDashboardContent() {
             </div>
 
             <div className="flex items-center space-x-4 mt-6">
-              <button onClick={handleSimulatePayment} disabled={paying} className="flex-1 h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-sm shadow-lg">
+              <button onClick={handleSimulatePayment} disabled={paying} className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-lg cursor-pointer">
                 {paying ? 'Authorizing...' : 'Pay Simulated Amount'}
               </button>
               <button onClick={() => setSelectedInvoice(null)} className="px-4 h-11 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold">Cancel</button>

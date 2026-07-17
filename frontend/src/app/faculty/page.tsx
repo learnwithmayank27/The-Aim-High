@@ -391,7 +391,7 @@ function FacultyDashboardContent() {
                 className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
               />
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Publish Assignment
             </button>
           </form>
@@ -435,7 +435,7 @@ function FacultyDashboardContent() {
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Description</label>
               <textarea value={vDesc} onChange={(e) => setVDesc(e.target.value)} rows={3} placeholder="Brief summary of lecture content..." className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none resize-none" />
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Publish Video Lecture
             </button>
           </form>
@@ -493,7 +493,7 @@ function FacultyDashboardContent() {
                 />
               </div>
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Publish Paper
             </button>
           </form>
@@ -527,7 +527,7 @@ function FacultyDashboardContent() {
                 <option value="LATE">Late</option>
               </select>
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Mark Attendance
             </button>
           </form>
@@ -568,7 +568,7 @@ function FacultyDashboardContent() {
             <button 
               type="submit" 
               disabled={pendingSubmissions.length === 0}
-              className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
             >
               Submit Grading Result
             </button>

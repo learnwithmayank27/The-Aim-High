@@ -478,7 +478,7 @@ function AdminDashboardContent() {
                     </label>
                     <button 
                       type="submit"
-                      className="px-6 h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md flex items-center space-x-2 hover:bg-slate-800 transition-all"
+                      className="px-6 h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md flex items-center space-x-2 hover:bg-primary/95 transition-all cursor-pointer"
                     >
                       <Plus size={16} />
                       <span>Publish Notice</span>
@@ -682,7 +682,7 @@ function AdminDashboardContent() {
                 </motion.div>
               )}
 
-              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                 <Plus size={16} />
                 <span>Create User Profile</span>
               </button>
@@ -744,7 +744,7 @@ function AdminDashboardContent() {
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Description</label>
                 <textarea value={courseDesc} onChange={(e) => setCourseDesc(e.target.value)} required rows={3} placeholder="Course details..." className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none resize-none" />
               </div>
-              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                 <Plus size={16} />
                 <span>Create Course</span>
               </button>
@@ -770,7 +770,7 @@ function AdminDashboardContent() {
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Subject Name</label>
                 <input type="text" value={subjectName} onChange={(e) => setSubjectName(e.target.value)} required placeholder="e.g. Mathematics" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
               </div>
-              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+              <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                 <Plus size={16} />
                 <span>Add Subject</span>
               </button>
@@ -830,7 +830,7 @@ function AdminDashboardContent() {
               />
             </div>
 
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2 cursor-pointer">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
               <Plus size={16} />
               <span>Publish Paper</span>
             </button>
@@ -865,7 +865,7 @@ function AdminDashboardContent() {
                 <option value="LATE">Late</option>
               </select>
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Record Check-in
             </button>
           </form>
@@ -917,7 +917,7 @@ function AdminDashboardContent() {
               </div>
             </div>
 
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Publish Result
             </button>
           </form>
@@ -947,7 +947,7 @@ function AdminDashboardContent() {
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Payment Due Date</label>
               <input type="date" value={feeDueDate} onChange={(e) => setFeeDueDate(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center cursor-pointer">
               Generate Invoice
             </button>
           </form>
@@ -993,7 +993,7 @@ function AdminDashboardContent() {
               </label>
               <button 
                 type="submit"
-                className="px-6 h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md flex items-center space-x-2 hover:bg-slate-800 transition-all"
+                className="px-6 h-11 rounded-xl bg-primary text-primary-foreground font-bold shadow-md flex items-center space-x-2 hover:bg-primary/95 transition-all cursor-pointer"
               >
                 <Plus size={16} />
                 <span>Publish Notice</span>

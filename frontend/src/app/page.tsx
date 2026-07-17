@@ -223,7 +223,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link 
                 href="#courses"
-                className="px-8 h-12 rounded-xl bg-primary text-white dark:bg-secondary dark:text-white dark:hover:bg-slate-700 hover:bg-slate-800 font-bold text-center flex items-center justify-center transition-all shadow-lg"
+                className="px-8 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 font-bold text-center flex items-center justify-center transition-all shadow-lg cursor-pointer"
               >
                 Explore Courses
               </Link>

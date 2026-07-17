@@ -192,7 +192,7 @@ export default function ProfileSection() {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="px-5 py-2.5 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-90 font-bold text-sm shadow-md transition-all cursor-pointer self-start sm:self-auto"
+            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 font-bold text-sm shadow-md transition-all cursor-pointer self-start sm:self-auto"
           >
             Edit Profile
           </button>
@@ -553,7 +553,7 @@ export default function ProfileSection() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
+                  className="flex-1 h-11 flex items-center justify-center rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
                 >
                   {saving ? (
                     <>
@@ -583,7 +583,7 @@ export default function ProfileSection() {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer"
+                className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all text-sm font-semibold shadow-md cursor-pointer"
               >
                 Edit Profile
               </button>
