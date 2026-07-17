@@ -58,6 +58,7 @@ function FacultyDashboardContent() {
   const [attStudentId, setAttStudentId] = useState('');
 
   const [studentsList, setStudentsList] = useState<any[]>([]);
+  const [pendingSubmissions, setPendingSubmissions] = useState<any[]>([]);
 
   // 5. Grading Form
   const [submissionId, setSubmissionId] = useState('');
@@ -67,6 +68,7 @@ function FacultyDashboardContent() {
   useEffect(() => {
     fetchFacultyData();
     fetchStudentsList();
+    fetchPendingSubmissions();
   }, []);
 
   const fetchFacultyData = async () => {
@@ -104,6 +106,20 @@ function FacultyDashboardContent() {
       }
     } catch (err) {
       console.error('Failed to load students list:', err);
+    }
+  };
+
+  const fetchPendingSubmissions = async () => {
+    try {
+      const res = await api.get('/homework/submissions');
+      const list = res.data || [];
+      const filtered = list.filter((s: any) => s.status === 'SUBMITTED');
+      setPendingSubmissions(filtered);
+      if (filtered.length > 0) {
+        setSubmissionId(filtered[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load pending submissions:', err);
     }
   };
 
@@ -221,6 +237,7 @@ function FacultyDashboardContent() {
       setGradeMarks('');
       setGradeFeedback('');
       fetchFacultyData();
+      fetchPendingSubmissions();
     } catch (err: any) {
       triggerAlert('error', err.response?.data?.message || 'Failed to grade submission.');
     }
@@ -525,8 +542,20 @@ function FacultyDashboardContent() {
           </h3>
           <form onSubmit={handleGradeSubmission} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Submission ID</label>
-              <input type="text" value={submissionId} onChange={(e) => setSubmissionId(e.target.value)} required placeholder="Paste student submission UUID" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Student Submission</label>
+              {pendingSubmissions.length === 0 ? (
+                <div className="p-3 text-center text-xs text-slate-450 border border-dashed border-slate-200 dark:border-slate-850 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 font-medium">
+                  No submissions pending grading
+                </div>
+              ) : (
+                <select value={submissionId} onChange={(e) => setSubmissionId(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none text-slate-700 dark:text-slate-300">
+                  {pendingSubmissions.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.studentName} - {s.homeworkTitle} ({new Date(s.submittedAt).toLocaleDateString()})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Marks Scored</label>
@@ -536,7 +565,11 @@ function FacultyDashboardContent() {
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Feedback Notes</label>
               <textarea value={gradeFeedback} onChange={(e) => setGradeFeedback(e.target.value)} rows={3} placeholder="Good conceptual clarity..." className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none resize-none" />
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button 
+              type="submit" 
+              disabled={pendingSubmissions.length === 0}
+              className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center cursor-pointer"
+            >
               Submit Grading Result
             </button>
           </form>

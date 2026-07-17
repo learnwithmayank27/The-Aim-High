@@ -151,3 +151,54 @@ export async function getStudentSubmissions(req: AuthenticatedRequest, res: Resp
     next(err);
   }
 }
+
+export async function getFacultySubmissions(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+    const faculty = await prisma.facultyProfile.findUnique({
+      where: { userId: req.user.userId },
+    });
+    if (!faculty) {
+      return res.status(403).json({ message: 'Only faculty members can view submissions.' });
+    }
+
+    const submissions = await prisma.homeworkSubmission.findMany({
+      where: {
+        homework: {
+          facultyId: faculty.id,
+        },
+      },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: { name: true },
+            },
+          },
+        },
+        homework: {
+          select: { title: true },
+        },
+      },
+      orderBy: {
+        submittedAt: 'desc',
+      },
+    });
+
+    const formatted = submissions.map((s) => ({
+      id: s.id,
+      studentName: s.student.user.name,
+      homeworkTitle: s.homework.title,
+      status: s.status,
+      submittedAt: s.submittedAt,
+      fileUrl: s.fileUrl,
+      marks: s.marks,
+      feedback: s.feedback,
+    }));
+
+    return res.json(formatted);
+  } catch (err) {
+    next(err);
+  }
+}
