@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../lib/api';
-import { User, Mail, Phone, Lock, Book, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Book, FileText, CheckCircle, AlertCircle, Loader2, Upload } from 'lucide-react';
 
 export default function ProfileSection() {
   const { refreshUser } = useAuth();
@@ -19,6 +19,10 @@ export default function ProfileSection() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Profile picture file & preview
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Role Specific Form State
   const [className, setClassName] = useState('');
@@ -92,35 +96,45 @@ export default function ProfileSection() {
 
     setSaving(true);
 
-    const payload: any = {
-      name,
-      email,
-      phone,
-    };
-
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('phone', phone);
+    
     if (password) {
-      payload.password = password;
+      formData.append('password', password);
+    }
+    
+    if (avatarFile) {
+      formData.append('avatar', avatarFile);
     }
 
     if (profileData.role === 'STUDENT') {
-      payload.className = className;
-      payload.board = board;
+      formData.append('className', className);
+      formData.append('board', board);
     } else if (profileData.role === 'FACULTY') {
-      payload.qualification = qualification;
-      payload.experience = experience;
-      payload.subjects = subjects;
-      payload.biography = biography;
+      formData.append('qualification', qualification);
+      formData.append('experience', experience);
+      formData.append('subjects', subjects);
+      formData.append('biography', biography);
     } else if (profileData.role === 'PARENT') {
-      payload.relation = relation;
-      payload.address = address;
-      payload.alternatePhone = alternatePhone;
+      formData.append('relation', relation);
+      formData.append('address', address);
+      formData.append('alternatePhone', alternatePhone);
     }
 
     try {
-      await api.put('/auth/me', payload);
+      await api.put('/auth/me', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       setSuccessMsg('Profile updated successfully!');
       setPassword('');
       setConfirmPassword('');
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      
       // Sync authentication context state
       await refreshUser();
       // Re-fetch current data
@@ -132,10 +146,18 @@ export default function ProfileSection() {
     }
   };
 
+  const getAvatarUrl = (avatarPath: string) => {
+    if (!avatarPath) return '';
+    if (avatarPath.startsWith('http')) return avatarPath;
+    const apiBase = api.defaults.baseURL || 'http://localhost:5000/api';
+    const host = apiBase.replace('/api', '');
+    return `${host}${avatarPath}`;
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="animate-spin text-primary" size={40} />
+        <Loader2 className="animate-spin text-primary dark:text-secondary" size={40} />
         <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Loading your profile...</p>
       </div>
     );
@@ -153,7 +175,7 @@ export default function ProfileSection() {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">My Profile Settings</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account credentials and dashboard preferences.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account credentials, biography, and profile picture.</p>
       </div>
 
       {/* Alert Feedbacks */}
@@ -171,16 +193,76 @@ export default function ProfileSection() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: User Summary Card */}
+        {/* Left Column: User Summary Card & Avatar Upload */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center justify-start h-fit">
-          <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-3xl mb-4 border border-primary/20 shadow-inner">
-            {name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+          
+          {/* Interactive Avatar Container */}
+          <div className="relative group w-24 h-24 mb-4">
+            {avatarPreview ? (
+              <img 
+                src={avatarPreview} 
+                alt={name} 
+                className="w-24 h-24 rounded-full object-cover border border-primary/25 shadow-md"
+              />
+            ) : profileData?.avatar ? (
+              <img 
+                src={getAvatarUrl(profileData.avatar)} 
+                alt={name} 
+                className="w-24 h-24 rounded-full object-cover border border-primary/25 shadow-md"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-secondary font-bold text-3xl border border-primary/20 shadow-inner">
+                {name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+              </div>
+            )}
+            {/* Camera Overlay for Quick Upload */}
+            <label className="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold">
+              <Upload size={16} className="mb-1" />
+              <span>Upload Photo</span>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setAvatarFile(file);
+                    setAvatarPreview(URL.createObjectURL(file));
+                  }
+                }}
+                className="hidden" 
+              />
+            </label>
           </div>
+          
           <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-full">{name}</h2>
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider mt-1">{roleLabels[profileData?.role]}</p>
+          <p className="text-xs font-semibold text-primary dark:text-secondary uppercase tracking-wider mt-1">{roleLabels[profileData?.role]}</p>
+          
+          {/* File Picker Display below avatar */}
+          <label className="mt-3 inline-flex items-center space-x-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[10px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-all">
+            <Upload size={12} />
+            <span>{avatarFile ? 'Change Pending File' : 'Browse Avatar Image'}</span>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setAvatarFile(file);
+                  setAvatarPreview(URL.createObjectURL(file));
+                }
+              }}
+              className="hidden" 
+            />
+          </label>
+          {avatarFile && (
+            <p className="text-[10px] text-emerald-500 font-bold mt-2 truncate max-w-full">
+              Selected: {avatarFile.name}
+            </p>
+          )}
+
           <div className="w-full border-t border-slate-100 dark:border-slate-800/60 my-5" />
           
-          <div className="w-full space-y-4 text-left text-sm text-slate-600 dark:text-slate-300">
+          <div className="w-full space-y-4 text-left text-sm text-slate-600 dark:text-slate-350">
             <div className="flex items-center space-x-3">
               <Mail size={16} className="text-slate-400" />
               <span className="truncate">{email}</span>
@@ -197,7 +279,7 @@ export default function ProfileSection() {
         {/* Right Column: Profile Edit Form */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
           <form onSubmit={handleUpdate} className="space-y-6">
-            <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
               <h3 className="text-md font-bold text-slate-900 dark:text-white">Account Details</h3>
             </div>
 
@@ -211,7 +293,7 @@ export default function ProfileSection() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -225,7 +307,7 @@ export default function ProfileSection() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -238,7 +320,7 @@ export default function ProfileSection() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -247,7 +329,7 @@ export default function ProfileSection() {
             {/* Role Specific Configurations */}
             {profileData?.role === 'STUDENT' && (
               <div className="space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-850 pb-4 pt-2">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-4 pt-2">
                   <h3 className="text-md font-bold text-slate-900 dark:text-white">Academic Details</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -257,7 +339,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={className}
-                      className="w-full h-11 px-4 rounded-xl border bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -266,7 +348,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={board}
-                      className="w-full h-11 px-4 rounded-xl border bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -275,7 +357,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={rollNumber}
-                      className="w-full h-11 px-4 rounded-xl border bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -285,7 +367,7 @@ export default function ProfileSection() {
 
             {profileData?.role === 'FACULTY' && (
               <div className="space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-850 pb-4 pt-2">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-4 pt-2">
                   <h3 className="text-md font-bold text-slate-900 dark:text-white">Faculty Bio & Qualifications</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -297,7 +379,7 @@ export default function ProfileSection() {
                       value={qualification}
                       onChange={(e) => setQualification(e.target.value)}
                       placeholder="e.g. M.Sc. in Physics, IIT Kanpur"
-                      className="w-full h-11 px-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                   <div>
@@ -308,7 +390,7 @@ export default function ProfileSection() {
                       value={experience}
                       onChange={(e) => setExperience(e.target.value)}
                       placeholder="e.g. 5+ Years"
-                      className="w-full h-11 px-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -321,7 +403,7 @@ export default function ProfileSection() {
                         value={subjects}
                         onChange={(e) => setSubjects(e.target.value)}
                         placeholder="Physics, Mathematics"
-                        className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                       />
                     </div>
                   </div>
@@ -335,7 +417,7 @@ export default function ProfileSection() {
                         onChange={(e) => setBiography(e.target.value)}
                         rows={3}
                         placeholder="Tell students about your teaching philosophy..."
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none text-sm min-h-[80px]"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all min-h-[80px] resize-none"
                       />
                     </div>
                   </div>
@@ -345,7 +427,7 @@ export default function ProfileSection() {
 
             {profileData?.role === 'PARENT' && (
               <div className="space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-850 pb-4 pt-2">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-4 pt-2">
                   <h3 className="text-md font-bold text-slate-900 dark:text-white">Parent / Guardian Information</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -357,7 +439,7 @@ export default function ProfileSection() {
                       value={relation}
                       onChange={(e) => setRelation(e.target.value)}
                       placeholder="Father, Mother, Guardian"
-                      className="w-full h-11 px-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                   <div>
@@ -366,7 +448,7 @@ export default function ProfileSection() {
                       type="tel"
                       value={alternatePhone}
                       onChange={(e) => setAlternatePhone(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -376,7 +458,7 @@ export default function ProfileSection() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       rows={2}
-                      className="w-full px-4 py-3 rounded-xl border focus:outline-none text-sm min-h-[60px]"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all min-h-[60px] resize-none"
                     />
                   </div>
                 </div>
@@ -384,9 +466,9 @@ export default function ProfileSection() {
             )}
 
             <div className="space-y-4">
-              <div className="border-b border-slate-100 dark:border-slate-850 pb-4 pt-2">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-4 pt-2">
                 <h3 className="text-md font-bold text-slate-900 dark:text-white">Security & Password</h3>
-                <p className="text-xs text-slate-450 mt-1">Leave these blank if you do not wish to change your password.</p>
+                <p className="text-xs text-slate-400 mt-1">Leave these blank if you do not wish to change your password.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,7 +480,7 @@ export default function ProfileSection() {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                 </div>
@@ -411,7 +493,7 @@ export default function ProfileSection() {
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 rounded-xl border focus:outline-none text-sm"
+                      className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                 </div>
@@ -421,7 +503,7 @@ export default function ProfileSection() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-white hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
+              className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
             >
               {saving ? (
                 <>

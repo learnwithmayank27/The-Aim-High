@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { register, login, googleLogin, getProfile, updateProfile } from '../controllers/authController';
 import { protect } from '../middleware/auth';
 import { authLimiter } from '../middleware/rateLimiter';
+import { upload } from '../utils/fileUpload';
 
 const router = Router();
 
@@ -9,6 +10,6 @@ router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
 router.post('/google-login', authLimiter, googleLogin);
 router.get('/me', protect, getProfile);
-router.put('/me', protect, updateProfile);
+router.put('/me', protect, upload.single('avatar'), updateProfile);
 
 export default router;

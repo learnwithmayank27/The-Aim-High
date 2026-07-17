@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../config/db';
 import { generateToken } from '../utils/jwt';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { uploadToCloudinaryOrLocal } from '../utils/fileUpload';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -257,6 +258,9 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response, ne
     if (phone !== undefined) updateData.phone = phone;
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
+    }
+    if (req.file) {
+      updateData.avatar = await uploadToCloudinaryOrLocal(req.file.path, 'avatars');
     }
 
     await prisma.$transaction(async (tx) => {
