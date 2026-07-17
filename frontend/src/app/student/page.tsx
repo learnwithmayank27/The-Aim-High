@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import api from '../../lib/api';
 import { useSearchParams } from 'next/navigation';
+import ProfileSection from '../components/ProfileSection';
 import { 
   CheckSquare, Clock, CreditCard, Video, Award, 
   ArrowRight, ShieldAlert, Sparkles, CheckCircle, FileText, Upload
@@ -578,6 +579,10 @@ function StudentDashboardContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {tab === 'profile' && (
+        <ProfileSection />
       )}
     </div>
   );

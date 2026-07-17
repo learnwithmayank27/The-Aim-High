@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import api from '../../lib/api';
 import { useSearchParams } from 'next/navigation';
+import ProfileSection from '../components/ProfileSection';
 import { 
   Users, BookOpen, CreditCard, Bell, 
   Plus, Calendar, Mail, FileText, CheckCircle,
@@ -958,6 +959,10 @@ function AdminDashboardContent() {
             </div>
           </form>
         </div>
+      )}
+
+      {tab === 'profile' && (
+        <ProfileSection />
       )}
     </div>
   );

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import api from '../../lib/api';
 import { useSearchParams } from 'next/navigation';
+import ProfileSection from '../components/ProfileSection';
 import { 
   ClipboardList, Video, FileText, CheckCircle, 
   Calendar, Clock, Plus, BookOpen, AlertCircle,
@@ -492,6 +493,10 @@ function FacultyDashboardContent() {
             </button>
           </form>
         </div>
+      )}
+
+      {tab === 'profile' && (
+        <ProfileSection />
       )}
     </div>
   );

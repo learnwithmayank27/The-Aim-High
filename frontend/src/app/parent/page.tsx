@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import api from '../../lib/api';
 import { useSearchParams } from 'next/navigation';
+import ProfileSection from '../components/ProfileSection';
 import { 
   HeartHandshake, CheckSquare, Award, CreditCard, 
   Bell, Calendar, Clock, BookOpen, User 
@@ -250,6 +251,10 @@ function ParentDashboardContent() {
             )}
           </div>
         </div>
+      )}
+
+      {tab === 'profile' && (
+        <ProfileSection />
       )}
     </div>
   );

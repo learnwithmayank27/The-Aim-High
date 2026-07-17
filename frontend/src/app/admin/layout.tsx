@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Users, BookOpen, FileText, CheckSquare, Award, CreditCard, 
-  Bell, LayoutDashboard, LogOut, Shield 
+  Bell, LayoutDashboard, LogOut, Shield, User 
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -108,6 +108,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin?tab=notices" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Bell size={18} />
               <span>Notice Board</span>
+            </Link>
+            <Link href="/admin?tab=profile" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
+              <User size={18} />
+              <span>My Profile</span>
             </Link>
           </nav>
         </div>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Users, BookOpen, FileText, CheckSquare, Award, CreditCard, 
-  LayoutDashboard, LogOut, Bell, HeartHandshake 
+  LayoutDashboard, LogOut, Bell, HeartHandshake, User 
 } from 'lucide-react';
 
 export default function ParentLayout({ children }: { children: React.ReactNode }) {
@@ -93,6 +93,10 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
             <Link href="/parent?tab=notices" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Bell size={18} />
               <span>Notice board</span>
+            </Link>
+            <Link href="/parent?tab=profile" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
+              <User size={18} />
+              <span>My Profile</span>
             </Link>
           </nav>
         </div>

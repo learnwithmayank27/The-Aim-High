@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Users, BookOpen, FileText, CheckSquare, Award, Video, 
-  LayoutDashboard, LogOut, GraduationCap, ClipboardList 
+  LayoutDashboard, LogOut, GraduationCap, ClipboardList, User 
 } from 'lucide-react';
 
 export default function FacultyLayout({ children }: { children: React.ReactNode }) {
@@ -97,6 +97,10 @@ export default function FacultyLayout({ children }: { children: React.ReactNode 
             <Link href="/faculty?tab=results" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Award size={18} />
               <span>Gradebook Marks</span>
+            </Link>
+            <Link href="/faculty?tab=profile" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
+              <User size={18} />
+              <span>My Profile</span>
             </Link>
           </nav>
         </div>

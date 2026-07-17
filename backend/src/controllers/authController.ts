@@ -200,3 +200,147 @@ export async function getProfile(req: AuthenticatedRequest, res: Response, next:
     next(err);
   }
 }
+
+export async function updateProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized.' });
+    }
+
+    const userId = req.user.userId;
+    const { 
+      name, 
+      email, 
+      phone, 
+      password,
+      // student fields
+      className,
+      board,
+      rollNumber,
+      // faculty fields
+      qualification,
+      experience,
+      subjects,
+      biography,
+      // parent fields
+      relation,
+      address,
+      alternatePhone
+    } = req.body;
+
+    // Retrieve user first
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        studentProfile: true,
+        facultyProfile: true,
+        parentProfile: true
+      }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Check if email uniqueness constraint is violated
+    if (email && email !== existingUser.email) {
+      const emailCheck = await prisma.user.findUnique({ where: { email } });
+      if (emailCheck) {
+        return res.status(400).json({ message: 'Email is already in use by another account.' });
+      }
+    }
+
+    // Data for update
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update User
+      await tx.user.update({
+        where: { id: userId },
+        data: updateData
+      });
+
+      // Update corresponding role profile
+      if (existingUser.role === 'STUDENT' && existingUser.studentProfile) {
+        const studentUpdate: any = {};
+        if (className) studentUpdate.className = className;
+        if (board) studentUpdate.board = board;
+        if (rollNumber) {
+          if (rollNumber !== existingUser.studentProfile.rollNumber) {
+            const rollCheck = await tx.studentProfile.findUnique({ where: { rollNumber } });
+            if (rollCheck) {
+              throw new Error('Roll number is already in use.');
+            }
+          }
+          studentUpdate.rollNumber = rollNumber;
+        }
+
+        if (Object.keys(studentUpdate).length > 0) {
+          await tx.studentProfile.update({
+            where: { id: existingUser.studentProfile.id },
+            data: studentUpdate
+          });
+        }
+      } else if (existingUser.role === 'FACULTY' && existingUser.facultyProfile) {
+        const facultyUpdate: any = {};
+        if (qualification) facultyUpdate.qualification = qualification;
+        if (experience) facultyUpdate.experience = experience;
+        if (subjects) {
+          facultyUpdate.subjects = typeof subjects === 'string' ? subjects : JSON.stringify(subjects);
+        }
+        if (biography) facultyUpdate.biography = biography;
+
+        if (Object.keys(facultyUpdate).length > 0) {
+          await tx.facultyProfile.update({
+            where: { id: existingUser.facultyProfile.id },
+            data: facultyUpdate
+          });
+        }
+      } else if (existingUser.role === 'PARENT' && existingUser.parentProfile) {
+        const parentUpdate: any = {};
+        if (relation) parentUpdate.relation = relation;
+        if (address) parentUpdate.address = address;
+        if (alternatePhone !== undefined) parentUpdate.alternatePhone = alternatePhone;
+
+        if (Object.keys(parentUpdate).length > 0) {
+          await tx.parentProfile.update({
+            where: { id: existingUser.parentProfile.id },
+            data: parentUpdate
+          });
+        }
+      }
+    });
+
+    // Get final user details
+    const finalUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        studentProfile: {
+          include: { parent: { include: { user: true } } }
+        },
+        facultyProfile: true,
+        parentProfile: {
+          include: { students: { include: { user: true } } }
+        }
+      }
+    });
+
+    if (finalUser) {
+      (finalUser as any).password = undefined;
+    }
+
+    return res.json({ 
+      message: 'Profile updated successfully.', 
+      user: finalUser 
+    });
+  } catch (err: any) {
+    return res.status(400).json({ message: err.message || 'Profile update failed.' });
+  }
+}
+
