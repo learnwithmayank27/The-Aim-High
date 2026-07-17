@@ -348,3 +348,36 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response, ne
   }
 }
 
+export async function getStudentsList(req: Request, res: Response, next: NextFunction) {
+  try {
+    const students = await prisma.studentProfile.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: 'asc'
+        }
+      }
+    });
+
+    const formatted = students.map(s => ({
+      id: s.id,
+      name: s.user.name,
+      email: s.user.email,
+      className: s.className,
+      board: s.board,
+      rollNumber: s.rollNumber
+    }));
+
+    return res.json({ students: formatted });
+  } catch (err) {
+    next(err);
+  }
+}
+

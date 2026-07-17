@@ -81,14 +81,18 @@ function AdminDashboardContent() {
   const [resStudentId, setResStudentId] = useState('');
   const [resSubjId, setResSubjId] = useState('');
 
-  // 7. Fees State
+  // 7. Fee State
+  const [feeTitle, setFeeTitle] = useState('');
   const [feeAmount, setFeeAmount] = useState('');
   const [feeDueDate, setFeeDueDate] = useState('');
   const [feeStudentId, setFeeStudentId] = useState('');
 
+  const [studentsList, setStudentsList] = useState<any[]>([]);
+
   useEffect(() => {
     fetchStats();
     fetchCourses();
+    fetchStudentsList();
   }, []);
 
   const fetchStats = async () => {
@@ -113,6 +117,21 @@ function AdminDashboardContent() {
       setCourses(res.data || []);
     } catch (err) {
       console.error('Failed to load courses:', err);
+    }
+  };
+
+  const fetchStudentsList = async () => {
+    try {
+      const res = await api.get('/auth/students');
+      const list = res.data.students || [];
+      setStudentsList(list);
+      if (list.length > 0) {
+        setAttStudentId(list[0].id);
+        setResStudentId(list[0].id);
+        setFeeStudentId(list[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load students list:', err);
     }
   };
 
@@ -827,8 +846,12 @@ function AdminDashboardContent() {
           </h3>
           <form onSubmit={handleSaveAttendance} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Student Profile ID</label>
-              <input type="text" value={attStudentId} onChange={(e) => setAttStudentId(e.target.value)} required placeholder="Paste student profile UUID" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Student</label>
+              <select value={attStudentId} onChange={(e) => setAttStudentId(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none">
+                {studentsList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.className} - {s.rollNumber})</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Check-in Date</label>
@@ -863,8 +886,12 @@ function AdminDashboardContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Student Profile ID</label>
-                <input type="text" value={resStudentId} onChange={(e) => setResStudentId(e.target.value)} required placeholder="Paste student profile UUID" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Student</label>
+                <select value={resStudentId} onChange={(e) => setResStudentId(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none">
+                  {studentsList.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.className} - {s.rollNumber})</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Subject ID</label>
@@ -905,8 +932,12 @@ function AdminDashboardContent() {
           </h3>
           <form onSubmit={handleCreateFeeInvoice} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Student Profile ID</label>
-              <input type="text" value={feeStudentId} onChange={(e) => setFeeStudentId(e.target.value)} required placeholder="Paste student profile UUID" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Student</label>
+              <select value={feeStudentId} onChange={(e) => setFeeStudentId(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none">
+                {studentsList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.className} - {s.rollNumber})</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Invoice Amount (₹)</label>

@@ -57,6 +57,8 @@ function FacultyDashboardContent() {
   const [attStatus, setAttStatus] = useState('PRESENT');
   const [attStudentId, setAttStudentId] = useState('');
 
+  const [studentsList, setStudentsList] = useState<any[]>([]);
+
   // 5. Grading Form
   const [submissionId, setSubmissionId] = useState('');
   const [gradeMarks, setGradeMarks] = useState('');
@@ -64,6 +66,7 @@ function FacultyDashboardContent() {
 
   useEffect(() => {
     fetchFacultyData();
+    fetchStudentsList();
   }, []);
 
   const fetchFacultyData = async () => {
@@ -88,6 +91,19 @@ function FacultyDashboardContent() {
       console.error('Failed to load faculty stats:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStudentsList = async () => {
+    try {
+      const res = await api.get('/auth/students');
+      const list = res.data.students || [];
+      setStudentsList(list);
+      if (list.length > 0) {
+        setAttStudentId(list[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load students list:', err);
     }
   };
 
@@ -475,8 +491,12 @@ function FacultyDashboardContent() {
           </h3>
           <form onSubmit={handleMarkAttendance} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Student Profile UUID</label>
-              <input type="text" value={attStudentId} onChange={(e) => setAttStudentId(e.target.value)} required placeholder="Paste student ID" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Student</label>
+              <select value={attStudentId} onChange={(e) => setAttStudentId(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none text-slate-700 dark:text-slate-300">
+                {studentsList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.className} - {s.rollNumber})</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Date</label>
