@@ -1,0 +1,370 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  name           String
+  role           String          // ADMIN, FACULTY, STUDENT, PARENT
+  phone          String?
+  avatar         String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  
+  // Relations
+  studentProfile StudentProfile?
+  facultyProfile FacultyProfile?
+  parentProfile  ParentProfile?
+  noticesCreated Notice[]
+  blogsCreated   BlogPost[]
+
+  @@index([email])
+}
+
+model StudentProfile {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  className      String          // e.g., "Class 10", "Class 12"
+  board          String          // e.g., "CBSE", "ICSE", "State Boards"
+  rollNumber     String          @unique
+  parentId       String?
+  parent         ParentProfile?  @relation(fields: [parentId], references: [id], onDelete: SetNull)
+
+  // Relations
+  solutionUploads SolutionUpload[]
+  homeworkSubmissions HomeworkSubmission[]
+  watchProgress   WatchProgress[]
+  attendance      Attendance[]
+  results         Result[]
+  feeReceipts     FeeReceipt[]
+  bookmarks       Bookmark[]
+
+  @@index([className, board])
+}
+
+model FacultyProfile {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  qualification  String
+  experience     String          // e.g. "5 Years"
+  subjects       String          // Comma-separated or JSON string
+  achievements   String          // JSON string
+  biography      String
+  socialLinks    String?         // JSON string
+
+  // Relations
+  homeworks      Homework[]
+  liveClasses    LiveClass[]
+  attendanceTaken Attendance[]   @relation("AttendanceTakenBy")
+
+  @@index([userId])
+}
+
+model ParentProfile {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  relation       String          // e.g. "Father", "Mother"
+  address        String
+  alternatePhone String?
+
+  // Relations
+  students       StudentProfile[]
+
+  @@index([userId])
+}
+
+model Course {
+  id             String          @id @default(uuid())
+  name           String          // e.g. "Class 10 CBSE Math"
+  code           String          @unique
+  description    String
+  className      String          // "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"
+  board          String          // "CBSE", "ICSE", "State Boards"
+  subjects       Subject[]
+}
+
+model Subject {
+  id             String          @id @default(uuid())
+  name           String          // "Mathematics", "Physics", etc.
+  courseId       String
+  course         Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  papers         Paper[]
+  homeworks      Homework[]
+  videoLectures  VideoLecture[]
+  liveClasses    LiveClass[]
+  results        Result[]
+  notes          Note[]
+
+  @@index([courseId])
+}
+
+model Paper {
+  id             String          @id @default(uuid())
+  title          String
+  type           String          // PREVIOUS_YEAR or MODEL
+  fileUrl        String
+  fileType       String          // "PDF", "DOC", "ZIP", "IMAGE"
+  difficulty     String          @default("MEDIUM") // EASY, MEDIUM, HARD
+  year           Int
+  hasAnswerKey   Boolean         @default(false)
+  answerKeyUrl   String?
+  
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  // Relations
+  solutions      SolutionUpload[]
+  bookmarks      Bookmark[]      @relation("PaperBookmarks")
+
+  @@index([subjectId, type])
+}
+
+model SolutionUpload {
+  id             String          @id @default(uuid())
+  paperId        String
+  paper          Paper           @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  fileUrl        String
+  status         String           @default("PENDING") // PENDING, APPROVED, REJECTED
+  likes          Int             @default(0)
+  createdAt      DateTime        @default(now())
+  
+  comments       Comment[]
+
+  @@index([paperId])
+  @@index([studentId])
+}
+
+model Comment {
+  id             String          @id @default(uuid())
+  solutionId     String
+  solution       SolutionUpload  @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  userName       String
+  text           String
+  createdAt      DateTime        @default(now())
+}
+
+model Homework {
+  id             String          @id @default(uuid())
+  title          String
+  instructions   String
+  fileUrl        String?
+  dueDate        DateTime
+  
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  facultyId      String
+  faculty        FacultyProfile  @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  submissions    HomeworkSubmission[]
+
+  @@index([subjectId])
+  @@index([facultyId])
+}
+
+model HomeworkSubmission {
+  id             String          @id @default(uuid())
+  homeworkId     String
+  homework       Homework        @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  fileUrl        String
+  submittedAt    DateTime        @default(now())
+  marks          Float?
+  feedback       String?
+  status         String          @default("SUBMITTED") // PENDING, SUBMITTED, GRADED, LATE
+
+  @@unique([homeworkId, studentId])
+  @@index([studentId])
+}
+
+model VideoLecture {
+  id             String          @id @default(uuid())
+  title          String
+  description    String
+  youtubeUrl     String?
+  fileUrl        String?
+  className      String
+  chapter        String
+  topic          String
+  
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  watchProgress  WatchProgress[]
+  bookmarks      Bookmark[]      @relation("VideoBookmarks")
+
+  @@index([subjectId])
+}
+
+model WatchProgress {
+  id             String          @id @default(uuid())
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  videoId        String
+  video          VideoLecture    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  progressSeconds Int            @default(0)
+  completed      Boolean         @default(false)
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([studentId, videoId])
+}
+
+model LiveClass {
+  id             String          @id @default(uuid())
+  title          String
+  platform       String          // ZOOM, GOOGLE_MEET, YOUTUBE_LIVE
+  meetingId      String?
+  link           String          // meeting URL
+  scheduledTime  DateTime
+  durationMins   Int             @default(60)
+  recordingUrl   String?
+  
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  facultyId      String
+  faculty        FacultyProfile  @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  @@index([subjectId])
+}
+
+model Attendance {
+  id             String          @id @default(uuid())
+  date           DateTime
+  status         String          // PRESENT, ABSENT, LATE
+  
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  takenById      String
+  takenBy        FacultyProfile  @relation("AttendanceTakenBy", fields: [takenById], references: [id])
+
+  @@unique([studentId, date])
+  @@index([studentId])
+}
+
+model Result {
+  id             String          @id @default(uuid())
+  examName       String          // e.g. "Unit Test 1", "Term Exam"
+  type           String          // MCQ, DESCRIPTIVE
+  marksObtained  Float
+  totalMarks     Float
+  analysis       String?         // JSON string containing rank/weak areas
+  
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  @@index([studentId])
+  @@index([subjectId])
+}
+
+model FeeReceipt {
+  id             String          @id @default(uuid())
+  invoiceNo      String          @unique
+  amount         Float
+  status         String          @default("PENDING") // PAID, PENDING, FAILED
+  paymentMethod  String?         // UPI, CARD, NETBANKING
+  dueDate        DateTime
+  paidAt         DateTime?
+  receiptUrl     String?
+  
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  @@index([studentId])
+}
+
+model Notice {
+  id             String          @id @default(uuid())
+  title          String
+  content        String
+  isImportant    Boolean         @default(false)
+  createdById    String
+  createdBy      User            @relation(fields: [createdById], references: [id])
+  createdAt      DateTime        @default(now())
+
+  @@index([createdById])
+}
+
+model BlogPost {
+  id             String          @id @default(uuid())
+  title          String
+  slug           String          @unique
+  content        String
+  category       String          // "Exam Tips", "Education News", "Career Guidance"
+  bannerImage    String?
+  authorId       String
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+
+  @@index([authorId])
+}
+
+model ContactConfig {
+  id             String          @id @default("singleton")
+  phone          String
+  whatsapp       String
+  email          String
+  address        String
+  officeHours    String
+  mapUrl         String
+  updatedAt      DateTime        @updatedAt
+}
+
+model Note {
+  id             String          @id @default(uuid())
+  title          String
+  chapter        String
+  fileUrl        String
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  
+  bookmarks      Bookmark[]      @relation("NoteBookmarks")
+
+  @@index([subjectId])
+}
+
+model Bookmark {
+  id             String          @id @default(uuid())
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // Polymorphic bookmarks (optional fields)
+  videoId        String?
+  video          VideoLecture?   @relation("VideoBookmarks", fields: [videoId], references: [id], onDelete: Cascade)
+  paperId        String?
+  paper          Paper?          @relation("PaperBookmarks", fields: [paperId], references: [id], onDelete: Cascade)
+  noteId         String?
+  note           Note?           @relation("NoteBookmarks", fields: [noteId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime        @default(now())
+
+  @@unique([studentId, videoId])
+  @@unique([studentId, paperId])
+  @@unique([studentId, noteId])
+}
