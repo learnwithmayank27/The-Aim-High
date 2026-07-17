@@ -321,7 +321,7 @@ function AdminDashboardContent() {
     e.preventDefault();
     if (!feeStudentId) return triggerAlert(false, 'Student ID is required.');
     try {
-      await api.post('/fees', {
+      await api.post('/fees/invoice', {
         studentId: feeStudentId,
         amount: parseFloat(feeAmount),
         dueDate: new Date(feeDueDate)
