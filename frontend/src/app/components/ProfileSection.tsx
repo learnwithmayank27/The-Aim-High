@@ -12,6 +12,7 @@ export default function ProfileSection() {
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
@@ -134,6 +135,7 @@ export default function ProfileSection() {
       setConfirmPassword('');
       setAvatarFile(null);
       setAvatarPreview(null);
+      setIsEditing(false);
       
       // Sync authentication context state
       await refreshUser();
@@ -170,12 +172,31 @@ export default function ProfileSection() {
     PARENT: 'Parent / Guardian',
   };
 
+  const getInputClassName = (isFieldEditable: boolean) => {
+    const base = "w-full h-11 rounded-xl border text-sm transition-all focus:outline-none";
+    if (isFieldEditable) {
+      return `${base} border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-primary`;
+    }
+    return `${base} border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-550 dark:text-slate-450 cursor-not-allowed`;
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in p-2">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">My Profile Settings</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account credentials, biography, and profile picture.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">My Profile Settings</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account credentials, biography, and profile picture.</p>
+        </div>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="px-5 py-2.5 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-90 font-bold text-sm shadow-md transition-all cursor-pointer self-start sm:self-auto"
+          >
+            Edit Profile
+          </button>
+        )}
       </div>
 
       {/* Alert Feedbacks */}
@@ -215,10 +236,35 @@ export default function ProfileSection() {
                 {name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
               </div>
             )}
-            {/* Camera Overlay for Quick Upload */}
-            <label className="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold">
-              <Upload size={16} className="mb-1" />
-              <span>Upload Photo</span>
+            {/* Camera Overlay for Quick Upload (active only in editing mode) */}
+            {isEditing && (
+              <label className="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold">
+                <Upload size={16} className="mb-1" />
+                <span>Upload Photo</span>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setAvatarFile(file);
+                      setAvatarPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  className="hidden" 
+                />
+              </label>
+            )}
+          </div>
+          
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-full">{name}</h2>
+          <p className="text-xs font-semibold text-primary dark:text-secondary uppercase tracking-wider mt-1">{roleLabels[profileData?.role]}</p>
+          
+          {/* File Picker Display below avatar (active only in editing mode) */}
+          {isEditing ? (
+            <label className="mt-3 inline-flex items-center space-x-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[10px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-all">
+              <Upload size={12} />
+              <span>{avatarFile ? 'Change Pending File' : 'Browse Avatar Image'}</span>
               <input 
                 type="file" 
                 accept="image/*" 
@@ -232,28 +278,11 @@ export default function ProfileSection() {
                 className="hidden" 
               />
             </label>
-          </div>
-          
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-full">{name}</h2>
-          <p className="text-xs font-semibold text-primary dark:text-secondary uppercase tracking-wider mt-1">{roleLabels[profileData?.role]}</p>
-          
-          {/* File Picker Display below avatar */}
-          <label className="mt-3 inline-flex items-center space-x-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-[10px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-all">
-            <Upload size={12} />
-            <span>{avatarFile ? 'Change Pending File' : 'Browse Avatar Image'}</span>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  setAvatarFile(file);
-                  setAvatarPreview(URL.createObjectURL(file));
-                }
-              }}
-              className="hidden" 
-            />
-          </label>
+          ) : (
+            <span className="mt-3 inline-flex items-center space-x-1 px-3 py-1 bg-slate-100 dark:bg-slate-800/40 text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-full">
+              Profile locked
+            </span>
+          )}
           {avatarFile && (
             <p className="text-[10px] text-emerald-500 font-bold mt-2 truncate max-w-full">
               Selected: {avatarFile.name}
@@ -279,8 +308,13 @@ export default function ProfileSection() {
         {/* Right Column: Profile Edit Form */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
           <form onSubmit={handleUpdate} className="space-y-6">
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-4 flex items-center justify-between">
               <h3 className="text-md font-bold text-slate-900 dark:text-white">Account Details</h3>
+              {isEditing && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">
+                  Edit Mode Active
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -291,9 +325,10 @@ export default function ProfileSection() {
                   <input
                     type="text"
                     required
+                    disabled={!isEditing}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                    className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                   />
                 </div>
               </div>
@@ -305,9 +340,10 @@ export default function ProfileSection() {
                   <input
                     type="email"
                     required
+                    disabled={!isEditing}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                    className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                   />
                 </div>
               </div>
@@ -318,9 +354,10 @@ export default function ProfileSection() {
                   <Phone className="absolute left-3 top-3 text-slate-400" size={18} />
                   <input
                     type="tel"
+                    disabled={!isEditing}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                    className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                   />
                 </div>
               </div>
@@ -339,7 +376,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={className}
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed focus:outline-none"
                     />
                   </div>
                   <div>
@@ -348,7 +385,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={board}
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed focus:outline-none"
                     />
                   </div>
                   <div>
@@ -357,7 +394,7 @@ export default function ProfileSection() {
                       type="text"
                       disabled
                       value={rollNumber}
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed"
+                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-500 text-sm cursor-not-allowed focus:outline-none"
                     />
                   </div>
                 </div>
@@ -376,10 +413,11 @@ export default function ProfileSection() {
                     <input
                       type="text"
                       required
+                      disabled={!isEditing}
                       value={qualification}
                       onChange={(e) => setQualification(e.target.value)}
                       placeholder="e.g. M.Sc. in Physics, IIT Kanpur"
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      className={`${getInputClassName(isEditing)} px-4`}
                     />
                   </div>
                   <div>
@@ -387,10 +425,11 @@ export default function ProfileSection() {
                     <input
                       type="text"
                       required
+                      disabled={!isEditing}
                       value={experience}
                       onChange={(e) => setExperience(e.target.value)}
                       placeholder="e.g. 5+ Years"
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      className={`${getInputClassName(isEditing)} px-4`}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -400,10 +439,11 @@ export default function ProfileSection() {
                       <input
                         type="text"
                         required
+                        disabled={!isEditing}
                         value={subjects}
                         onChange={(e) => setSubjects(e.target.value)}
                         placeholder="Physics, Mathematics"
-                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                        className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                       />
                     </div>
                   </div>
@@ -413,11 +453,12 @@ export default function ProfileSection() {
                       <FileText className="absolute left-3 top-3 text-slate-400" size={18} />
                       <textarea
                         required
+                        disabled={!isEditing}
                         value={biography}
                         onChange={(e) => setBiography(e.target.value)}
                         rows={3}
                         placeholder="Tell students about your teaching philosophy..."
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all min-h-[80px] resize-none"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all focus:outline-none min-h-[80px] resize-none ${isEditing ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-primary' : 'border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-550 dark:text-slate-450 cursor-not-allowed'}`}
                       />
                     </div>
                   </div>
@@ -436,29 +477,32 @@ export default function ProfileSection() {
                     <input
                       type="text"
                       required
+                      disabled={!isEditing}
                       value={relation}
                       onChange={(e) => setRelation(e.target.value)}
                       placeholder="Father, Mother, Guardian"
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      className={`${getInputClassName(isEditing)} px-4`}
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-2">Alternate Phone</label>
                     <input
                       type="tel"
+                      disabled={!isEditing}
                       value={alternatePhone}
                       onChange={(e) => setAlternatePhone(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      className={`${getInputClassName(isEditing)} px-4`}
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-2">Residential Address</label>
                     <textarea
                       required
+                      disabled={!isEditing}
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       rows={2}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all min-h-[60px] resize-none"
+                      className={`w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none min-h-[60px] resize-none ${isEditing ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-primary' : 'border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/40 text-slate-550 dark:text-slate-450 cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
@@ -468,7 +512,7 @@ export default function ProfileSection() {
             <div className="space-y-4">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-4 pt-2">
                 <h3 className="text-md font-bold text-slate-900 dark:text-white">Security & Password</h3>
-                <p className="text-xs text-slate-400 mt-1">Leave these blank if you do not wish to change your password.</p>
+                <p className="text-xs text-slate-400 mt-1">Passwords can be updated only when Edit Mode is active.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -478,9 +522,11 @@ export default function ProfileSection() {
                     <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
                     <input
                       type="password"
+                      disabled={!isEditing}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      placeholder={isEditing ? "Type new password" : "••••••••"}
+                      className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                     />
                   </div>
                 </div>
@@ -491,29 +537,57 @@ export default function ProfileSection() {
                     <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
                     <input
                       type="password"
+                      disabled={!isEditing}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-primary transition-all"
+                      placeholder={isEditing ? "Re-type new password" : "••••••••"}
+                      className={`${getInputClassName(isEditing)} pl-10 pr-4`}
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="animate-spin mr-2" size={18} />
-                  Saving updates...
-                </>
-              ) : (
-                'Save Profile Changes'
-              )}
-            </button>
+            {isEditing ? (
+              <div className="flex space-x-4">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={18} />
+                      Saving updates...
+                    </>
+                  ) : (
+                    'Save Profile Changes'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    fetchProfile();
+                    setAvatarFile(null);
+                    setAvatarPreview(null);
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                  className="px-6 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-650 dark:text-slate-350 text-sm font-semibold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="w-full h-11 flex items-center justify-center rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary hover:bg-opacity-95 transition-all text-sm font-semibold shadow-md cursor-pointer"
+              >
+                Edit Profile
+              </button>
+            )}
           </form>
         </div>
       </div>
