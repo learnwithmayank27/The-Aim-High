@@ -168,7 +168,7 @@ export default function LandingPage() {
               <Link 
                 href="/login" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-semibold text-center block shadow-md"
+                className="w-full py-3 rounded-xl bg-primary text-white dark:bg-primary dark:text-white font-semibold text-center block shadow-md"
               >
                 Portal Login
               </Link>

@@ -33,69 +33,79 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white dark:bg-slate-900 text-slate-800 dark:text-white flex-shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-slate-800">
-        <div>
+      <aside className="w-full md:w-64 md:h-screen bg-white dark:bg-slate-900 text-slate-800 dark:text-white flex-shrink-0 flex flex-col md:justify-between border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 md:sticky md:top-0">
+        <div className="flex flex-col w-full">
           {/* Header */}
-          <div className="p-6 flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800">
-            <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/file_00000000717871fb90a931daa4d88bac.png" 
-                alt="The Aim High Academy Logo" 
-                className="h-10 w-auto object-contain block dark:hidden rotate-90"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/file_00000000f1d071faac6893ada3b5df28.png" 
-                alt="The Aim High Academy Logo" 
-                className="h-10 w-auto object-contain hidden dark:block"
-              />
+          <div className="p-4 md:p-6 flex items-center justify-between md:justify-start border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center space-x-3">
+              <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src="/file_00000000717871fb90a931daa4d88bac.png" 
+                  alt="The Aim High Academy Logo" 
+                  className="h-10 w-auto object-contain block dark:hidden rotate-90"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src="/file_00000000f1d071faac6893ada3b5df28.png" 
+                  alt="The Aim High Academy Logo" 
+                  className="h-10 w-auto object-contain hidden dark:block"
+                />
+              </div>
+              <div>
+                <span className="font-bold tracking-tight text-slate-900 dark:text-white block">Aim High</span>
+                <span className="text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider flex items-center">
+                  <Shield size={12} className="mr-1 text-primary" /> Admin Console
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold tracking-tight text-slate-900 dark:text-white block">Aim High</span>
-              <span className="text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider flex items-center">
-                <Shield size={12} className="mr-1 text-primary" /> Admin Console
-              </span>
-            </div>
+            {/* Mobile Sign Out */}
+            <button 
+              onClick={logout}
+              className="md:hidden p-2 rounded-xl bg-red-500/10 hover:bg-red-500/15 text-red-500 transition-all"
+              title="Sign Out"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
 
           {/* Navigation */}
-          <nav className="p-4 space-y-1">
-            <Link href="/admin?tab=overview" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+          <nav className="p-2 md:p-4 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible space-x-2 md:space-x-0 md:space-y-1 scrollbar-none">
+            <Link href="/admin?tab=overview" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <LayoutDashboard size={18} />
               <span>Overview</span>
             </Link>
-            <div className="px-4 py-2 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+            <div className="hidden md:block px-4 py-2 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
               Management
             </div>
-            <Link href="/admin?tab=users" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=users" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Users size={18} />
               <span>Users & Profiles</span>
             </Link>
-            <Link href="/admin?tab=courses" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=courses" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <BookOpen size={18} />
               <span>Courses & Subjects</span>
             </Link>
-            <Link href="/admin?tab=papers" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=papers" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <FileText size={18} />
               <span>PYQs & Model Papers</span>
             </Link>
-            <Link href="/admin?tab=attendance" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=attendance" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <CheckSquare size={18} />
               <span>Attendance sheets</span>
             </Link>
-            <Link href="/admin?tab=results" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=results" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Award size={18} />
               <span>Gradebook Results</span>
             </Link>
-            <Link href="/admin?tab=fees" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=fees" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <CreditCard size={18} />
               <span>Fees Billing</span>
             </Link>
-            <div className="px-4 py-2 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+            <div className="hidden md:block px-4 py-2 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
               Site Settings
             </div>
-            <Link href="/admin?tab=notices" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary">
+            <Link href="/admin?tab=notices" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors text-slate-700 dark:text-slate-200 hover:text-primary whitespace-nowrap flex-shrink-0">
               <Bell size={18} />
               <span>Notice Board</span>
             </Link>
@@ -103,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="hidden md:block p-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4 px-4">
             <div>
               <p className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[120px]">{user.name}</p>
@@ -121,7 +131,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-10">
+      <main className="flex-1 overflow-y-auto p-4 md:p-10">
         {children}
       </main>
     </div>
