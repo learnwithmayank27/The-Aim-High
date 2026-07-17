@@ -38,12 +38,12 @@ function StudentDashboardContent() {
 
   // Homework submission state
   const [submittingHomeworkId, setSubmittingHomeworkId] = useState<string | null>(null);
-  const [hwFileUrl, setHwFileUrl] = useState('');
+  const [hwFile, setHwFile] = useState<File | null>(null);
   const [hwSuccessMsg, setHwSuccessMsg] = useState('');
 
   // Paper solution state
   const [solvingPaperId, setSolvingPaperId] = useState<string | null>(null);
-  const [solutionUrl, setSolutionUrl] = useState('');
+  const [solutionFile, setSolutionFile] = useState<File | null>(null);
   const [solveSuccessMsg, setSolveSuccessMsg] = useState('');
 
   useEffect(() => {
@@ -129,15 +129,20 @@ function StudentDashboardContent() {
 
   const handleSubmitHomework = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!submittingHomeworkId || !hwFileUrl) return;
+    if (!submittingHomeworkId || !hwFile) return;
     try {
-      await api.post('/homework/submit', {
-        homeworkId: submittingHomeworkId,
-        fileUrl: hwFileUrl
+      const formData = new FormData();
+      formData.append('homeworkId', submittingHomeworkId);
+      formData.append('file', hwFile);
+      
+      await api.post('/homework/submit', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       setHwSuccessMsg('Homework submitted successfully!');
       setSubmittingHomeworkId(null);
-      setHwFileUrl('');
+      setHwFile(null);
       fetchSubmissions();
       setTimeout(() => setHwSuccessMsg(''), 3000);
     } catch (err) {
@@ -147,15 +152,20 @@ function StudentDashboardContent() {
 
   const handleSubmitPaperSolution = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!solvingPaperId || !solutionUrl) return;
+    if (!solvingPaperId || !solutionFile) return;
     try {
-      await api.post('/papers/solution', {
-        paperId: solvingPaperId,
-        fileUrl: solutionUrl
+      const formData = new FormData();
+      formData.append('paperId', solvingPaperId);
+      formData.append('file', solutionFile);
+
+      await api.post('/papers/solution', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       setSolveSuccessMsg('Solution uploaded successfully for review!');
       setSolvingPaperId(null);
-      setSolutionUrl('');
+      setSolutionFile(null);
       setTimeout(() => setSolveSuccessMsg(''), 3000);
     } catch (err) {
       console.error('Failed to submit paper solution:', err);
@@ -385,10 +395,15 @@ function StudentDashboardContent() {
                   <input type="text" value={submittingHomeworkId || ''} onChange={(e) => setSubmittingHomeworkId(e.target.value)} required placeholder="Paste homework UUID" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Solution Document URL</label>
-                  <input type="text" value={hwFileUrl} onChange={(e) => setHwFileUrl(e.target.value)} required placeholder="/uploads/submissions/math-solved.pdf" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Solution File</label>
+                  <input 
+                    type="file" 
+                    required 
+                    onChange={(e) => setHwFile(e.target.files?.[0] || null)}
+                    className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
+                  />
                 </div>
-                <button type="submit" className="w-full h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+                <button type="submit" className="w-full h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs hover:bg-slate-800 transition-all flex items-center justify-center space-x-2 cursor-pointer">
                   <Upload size={14} />
                   <span>Submit Solutions</span>
                 </button>
@@ -462,14 +477,19 @@ function StudentDashboardContent() {
             {solvingPaperId ? (
               <form onSubmit={handleSubmitPaperSolution} className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 space-y-4">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">Submit Paper Solution</h3>
-                <p className="text-[10px] text-slate-500">Provide a link to your solved solution paper.</p>
+                <p className="text-[10px] text-slate-500 font-medium">Browse and upload your solved solution paper.</p>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Solution File URL</label>
-                  <input type="text" value={solutionUrl} onChange={(e) => setSolutionUrl(e.target.value)} required placeholder="/uploads/submissions/solved.pdf" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Select Solution Document</label>
+                  <input 
+                    type="file" 
+                    required 
+                    onChange={(e) => setSolutionFile(e.target.files?.[0] || null)}
+                    className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
+                  />
                 </div>
                 <div className="flex space-x-2">
-                  <button type="submit" className="flex-1 h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs">Submit</button>
-                  <button type="button" onClick={() => setSolvingPaperId(null)} className="px-4 h-10 rounded-lg bg-slate-100 text-slate-500 text-xs">Cancel</button>
+                  <button type="submit" className="flex-1 h-10 rounded-lg bg-primary text-white dark:bg-secondary dark:text-primary font-bold text-xs cursor-pointer">Submit</button>
+                  <button type="button" onClick={() => setSolvingPaperId(null)} className="px-4 h-10 rounded-lg bg-slate-100 text-slate-500 text-xs cursor-pointer">Cancel</button>
                 </div>
               </form>
             ) : (

@@ -66,7 +66,7 @@ function AdminDashboardContent() {
   const [paperDifficulty, setPaperDifficulty] = useState('MEDIUM');
   const [paperYear, setPaperYear] = useState(new Date().getFullYear());
   const [paperSubjId, setPaperSubjId] = useState('');
-  const [paperFileUrl, setPaperFileUrl] = useState('');
+  const [paperFile, setPaperFile] = useState<File | null>(null);
 
   // 5. Attendance State
   const [attDate, setAttDate] = useState(new Date().toISOString().split('T')[0]);
@@ -230,19 +230,25 @@ function AdminDashboardContent() {
   const handleCreatePaper = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paperSubjId) return triggerAlert(false, 'Please select a Subject ID.');
+    if (!paperFile) return triggerAlert(false, 'Please select a file to upload.');
     try {
-      await api.post('/papers', {
-        title: paperTitle,
-        type: paperType,
-        difficulty: paperDifficulty,
-        year: parseInt(paperYear.toString()),
-        subjectId: paperSubjId,
-        fileType: 'PDF',
-        fileUrl: paperFileUrl || '/uploads/papers/mock-document.pdf'
+      const formData = new FormData();
+      formData.append('title', paperTitle);
+      formData.append('type', paperType);
+      formData.append('difficulty', paperDifficulty);
+      formData.append('year', paperYear.toString());
+      formData.append('subjectId', paperSubjId);
+      formData.append('fileType', 'PDF');
+      formData.append('file', paperFile);
+
+      await api.post('/papers', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       triggerAlert(true, 'Study Paper / PYQ published successfully!');
       setPaperTitle('');
-      setPaperFileUrl('');
+      setPaperFile(null);
       fetchStats();
     } catch (err: any) {
       triggerAlert(false, err.response?.data?.message || 'Failed to create paper.');
@@ -796,11 +802,16 @@ function AdminDashboardContent() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">File Resource URL</label>
-              <input type="text" value={paperFileUrl} onChange={(e) => setPaperFileUrl(e.target.value)} placeholder="/uploads/papers/maths-cbse.pdf" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 focus:outline-none" />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Document File (PDF)</label>
+              <input 
+                type="file" 
+                required 
+                onChange={(e) => setPaperFile(e.target.files?.[0] || null)}
+                className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
+              />
             </div>
 
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center space-x-2 cursor-pointer">
               <Plus size={16} />
               <span>Publish Paper</span>
             </button>

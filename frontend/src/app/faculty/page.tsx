@@ -42,6 +42,7 @@ function FacultyDashboardContent() {
   const [hwInst, setHwInst] = useState('');
   const [hwDue, setHwDue] = useState('');
   const [hwSubId, setHwSubId] = useState('');
+  const [hwFile, setHwFile] = useState<File | null>(null);
 
   // 3. Paper Form
   const [paperTitle, setPaperTitle] = useState('');
@@ -49,7 +50,7 @@ function FacultyDashboardContent() {
   const [paperDiff, setPaperDiff] = useState('MEDIUM');
   const [paperYear, setPaperYear] = useState(new Date().getFullYear());
   const [paperSubId, setPaperSubId] = useState('');
-  const [paperUrl, setPaperUrl] = useState('');
+  const [paperFile, setPaperFile] = useState<File | null>(null);
 
   // 4. Attendance Form
   const [attDate, setAttDate] = useState(new Date().toISOString().split('T')[0]);
@@ -124,16 +125,25 @@ function FacultyDashboardContent() {
     e.preventDefault();
     if (!hwTitle || !hwInst || !hwDue || !hwSubId) return;
     try {
-      await api.post('/homework', {
-        title: hwTitle,
-        instructions: hwInst,
-        dueDate: new Date(hwDue),
-        subjectId: hwSubId
+      const formData = new FormData();
+      formData.append('title', hwTitle);
+      formData.append('instructions', hwInst);
+      formData.append('dueDate', new Date(hwDue).toISOString());
+      formData.append('subjectId', hwSubId);
+      if (hwFile) {
+        formData.append('file', hwFile);
+      }
+
+      await api.post('/homework', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       triggerAlert('success', 'Homework assigned to student portal!');
       setHwTitle('');
       setHwInst('');
       setHwDue('');
+      setHwFile(null);
       fetchFacultyData();
     } catch (err: any) {
       triggerAlert('error', err.response?.data?.message || 'Failed to assign homework.');
@@ -142,20 +152,25 @@ function FacultyDashboardContent() {
 
   const handleUploadPaper = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!paperTitle || !paperSubId) return;
+    if (!paperTitle || !paperSubId || !paperFile) return;
     try {
-      await api.post('/papers', {
-        title: paperTitle,
-        type: paperType,
-        difficulty: paperDiff,
-        year: parseInt(paperYear.toString()),
-        subjectId: paperSubId,
-        fileType: 'PDF',
-        fileUrl: paperUrl || '/uploads/papers/mock-document.pdf'
+      const formData = new FormData();
+      formData.append('title', paperTitle);
+      formData.append('type', paperType);
+      formData.append('difficulty', paperDiff);
+      formData.append('year', paperYear.toString());
+      formData.append('subjectId', paperSubId);
+      formData.append('fileType', 'PDF');
+      formData.append('file', paperFile);
+
+      await api.post('/papers', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       triggerAlert('success', 'Study paper cataloged!');
       setPaperTitle('');
-      setPaperUrl('');
+      setPaperFile(null);
     } catch (err: any) {
       triggerAlert('error', err.response?.data?.message || 'Failed to upload paper.');
     }
@@ -335,7 +350,15 @@ function FacultyDashboardContent() {
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Due Date</label>
               <input type="date" value={hwDue} onChange={(e) => setHwDue(e.target.value)} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none" />
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Worksheet/Reference File (Optional)</label>
+              <input 
+                type="file" 
+                onChange={(e) => setHwFile(e.target.files?.[0] || null)}
+                className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
+              />
+            </div>
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer">
               Publish Assignment
             </button>
           </form>
@@ -428,11 +451,16 @@ function FacultyDashboardContent() {
                 <input type="number" value={paperYear} onChange={(e) => setPaperYear(parseInt(e.target.value))} required className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">File Resource URL</label>
-                <input type="text" value={paperUrl} onChange={(e) => setPaperUrl(e.target.value)} placeholder="/uploads/papers/math.pdf" className="w-full h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none" />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Document File (PDF)</label>
+                <input 
+                  type="file" 
+                  required 
+                  onChange={(e) => setPaperFile(e.target.files?.[0] || null)}
+                  className="w-full h-11 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none text-slate-700 dark:text-slate-300" 
+                />
               </div>
             </div>
-            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center">
+            <button type="submit" className="w-full h-11 rounded-xl bg-primary text-white dark:bg-secondary dark:text-primary font-bold shadow-md hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer">
               Publish Paper
             </button>
           </form>
