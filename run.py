@@ -6,56 +6,7 @@ import time
 import signal
 import shutil
 
-# --- Self-Bootstrapping Logic ---
-def check_and_bootstrap_venv():
-    # sys.prefix == sys.base_prefix is True if not in a venv
-    in_venv = sys.prefix != sys.base_prefix or hasattr(sys, 'real_prefix')
-    
-    if not in_venv:
-        root_dir = os.path.dirname(os.path.abspath(__file__))
-        venv_dir = os.path.join(root_dir, ".venv")
-        
-        print("=" * 70)
-        print("[SYSTEM] Not running inside a Python virtual environment.")
-        print(f"[SYSTEM] Creating virtual environment at: {venv_dir}")
-        print("=" * 70)
-        
-        if not os.path.isdir(venv_dir):
-            try:
-                subprocess.run([sys.executable, "-m", "venv", ".venv"], check=True)
-                print("[SYSTEM] Virtual environment created successfully.")
-            except Exception as e:
-                print(f"[ERROR] Failed to create virtual environment: {e}")
-                sys.exit(1)
-        
-        # Resolve python interpreter path in venv
-        if sys.platform == "win32":
-            venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
-        else:
-            venv_python = os.path.join(venv_dir, "bin", "python")
-            
-        if not os.path.exists(venv_python):
-            print(f"[ERROR] Virtual environment python not found at: {venv_python}")
-            sys.exit(1)
-            
-        print("[SYSTEM] Installing colorama in the virtual environment...")
-        try:
-            subprocess.run([venv_python, "-m", "pip", "install", "colorama"], check=True)
-            print("[SYSTEM] colorama installed successfully.")
-        except Exception as e:
-            print(f"[WARNING] Failed to install colorama in venv: {e}. Running without colors.")
-            
-        print("[SYSTEM] Restarting script inside the virtual environment...")
-        print("=" * 70)
-        
-        # Restart the script using the virtual environment's python
-        cmd = [venv_python] + sys.argv
-        sys.exit(subprocess.run(cmd).returncode)
-
-# Run bootstrap check
-check_and_bootstrap_venv()
-
-# --- Main Script Execution (Runs inside venv) ---
+# --- Main Script Execution ---
 try:
     from colorama import init, Fore, Style
     # Enable virtual terminal processing on Windows for ANSI colors
