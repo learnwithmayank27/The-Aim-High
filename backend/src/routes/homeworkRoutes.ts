@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createHomework, submitHomework, gradeSubmission, getHomeworkBySubject, getStudentSubmissions, getFacultySubmissions } from '../controllers/homeworkController';
+import { createHomework, submitHomework, gradeSubmission, getHomeworkBySubject, getStudentSubmissions, getFacultySubmissions, getAssignedHomework } from '../controllers/homeworkController';
 import { protect, restrictTo } from '../middleware/auth';
 import { upload } from '../utils/fileUpload';
 
@@ -11,5 +11,6 @@ router.patch('/submission/:id/grade', protect, restrictTo('FACULTY'), gradeSubmi
 router.get('/subject/:subjectId', protect, getHomeworkBySubject);
 router.get('/my-submissions', protect, restrictTo('STUDENT'), getStudentSubmissions);
 router.get('/submissions', protect, restrictTo('FACULTY'), getFacultySubmissions);
+router.get('/assigned', protect, restrictTo('STUDENT'), getAssignedHomework);
 
 export default router;

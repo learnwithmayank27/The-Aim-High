@@ -29,6 +29,7 @@ function StudentDashboardContent() {
   const [videos, setVideos] = useState<any[]>([]);
   const [papers, setPapers] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
+  const [assignedHomeworks, setAssignedHomeworks] = useState<any[]>([]);
 
   // Billing states
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -54,7 +55,10 @@ function StudentDashboardContent() {
     if (profile?.id) {
       if (tab === 'lectures') fetchVideos();
       if (tab === 'papers') fetchPapers();
-      if (tab === 'homework') fetchSubmissions();
+      if (tab === 'homework') {
+        fetchSubmissions();
+        fetchAssignedHomeworks();
+      }
     }
   }, [tab, profile]);
 
@@ -104,6 +108,15 @@ function StudentDashboardContent() {
       setSubmissions(res.data || []);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchAssignedHomeworks = async () => {
+    try {
+      const res = await api.get('/homework/assigned');
+      setAssignedHomeworks(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch assigned homework:', err);
     }
   };
 
@@ -352,48 +365,96 @@ function StudentDashboardContent() {
       )}
 
       {tab === 'homework' && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 max-w-4xl mx-auto space-y-6">
-          <h3 className="font-bold text-lg text-slate-900 dark:text-white">Homework Submissions Log</h3>
-          
-          {hwSuccessMsg && (
-            <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 text-xs font-semibold">
-              {hwSuccessMsg}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">My Submitted Tasks</h4>
-              <div className="space-y-4">
-                {submissions.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-4">No submissions made yet.</p>
-                ) : (
-                  submissions.map((sub) => (
-                    <div key={sub.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                      <div className="flex justify-between">
-                        <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200">{sub.homework.title}</h5>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-500 border border-green-500/20 uppercase font-bold">{sub.status}</span>
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Assigned Homeworks list */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 space-y-6">
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Assigned Homework Assignments</h3>
+            <div className="space-y-4">
+              {assignedHomeworks.length === 0 ? (
+                <p className="text-xs text-slate-400 py-4 text-center">No homework assignments active.</p>
+              ) : (
+                assignedHomeworks.map((hw) => (
+                  <div key={hw.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary dark:text-secondary font-bold uppercase">{hw.subjectName}</span>
+                        <span className="text-[10px] text-slate-400">By {hw.facultyName}</span>
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-2">Submitted: {new Date(sub.submittedAt).toLocaleDateString()}</p>
-                      {sub.marks !== null && (
-                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs">
-                          <span className="font-semibold text-slate-700">Grade: {sub.marks} Marks</span>
-                          <span className="text-slate-500 italic">Feedback: "{sub.feedback || 'None'}"</span>
-                        </div>
+                      <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">{hw.title}</h4>
+                      <p className="text-xs text-slate-500">{hw.instructions}</p>
+                      <p className="text-[10px] text-red-500 font-semibold mt-1">Due: {new Date(hw.dueDate).toLocaleString()}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {hw.fileUrl && (
+                        <a href={hw.fileUrl} download target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200">
+                          Download Sheet
+                        </a>
+                      )}
+                      {hw.isSubmitted ? (
+                        <span className="px-3 py-2 rounded-lg bg-green-500/10 text-green-500 text-xs font-bold border border-green-500/20">
+                          {hw.submissionStatus} {hw.submissionMarks !== null ? `(${hw.submissionMarks}m)` : ''}
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            setSubmittingHomeworkId(hw.id);
+                            const formElement = document.getElementById('hw-submit-form');
+                            if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
+                          }} 
+                          className="px-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer"
+                        >
+                          Submit Solution
+                        </button>
                       )}
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+                ))
+              )}
             </div>
+          </div>
 
-            <div>
-              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Upload Assignment Solution</h4>
-              <form onSubmit={handleSubmitHomework} className="space-y-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Homework ID</label>
-                  <input type="text" value={submittingHomeworkId || ''} onChange={(e) => setSubmittingHomeworkId(e.target.value)} required placeholder="Paste homework UUID" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none" />
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 space-y-6">
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Homework Submissions Log</h3>
+            
+            {hwSuccessMsg && (
+              <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 text-xs font-semibold">
+                {hwSuccessMsg}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">My Submitted Tasks</h4>
+                <div className="space-y-4">
+                  {submissions.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-4">No submissions made yet.</p>
+                  ) : (
+                    submissions.map((sub) => (
+                      <div key={sub.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                        <div className="flex justify-between">
+                          <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200">{sub.homework.title}</h5>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-500 border border-green-500/20 uppercase font-bold">{sub.status}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-2">Submitted: {new Date(sub.submittedAt).toLocaleDateString()}</p>
+                        {sub.marks !== null && (
+                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs">
+                            <span className="font-semibold text-slate-700">Grade: {sub.marks} Marks</span>
+                            <span className="text-slate-500 italic">Feedback: "{sub.feedback || 'None'}"</span>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Upload Assignment Solution</h4>
+                <form id="hw-submit-form" onSubmit={handleSubmitHomework} className="space-y-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Homework ID</label>
+                    <input type="text" value={submittingHomeworkId || ''} onChange={(e) => setSubmittingHomeworkId(e.target.value)} required placeholder="Paste homework UUID" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none" />
+                  </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Solution File</label>
                   <input 
@@ -460,8 +521,8 @@ function StudentDashboardContent() {
                       <p className="text-xs text-slate-500 mt-1">Year: {p.year} | Difficulty: {p.difficulty}</p>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <a href={p.fileUrl} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200">
-                        View PDF
+                      <a href={p.fileUrl} download target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200">
+                        Download File
                       </a>
                       <button onClick={() => setSolvingPaperId(p.id)} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer">
                         Submit Solution

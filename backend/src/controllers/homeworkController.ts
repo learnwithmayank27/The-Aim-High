@@ -202,3 +202,64 @@ export async function getFacultySubmissions(req: AuthenticatedRequest, res: Resp
     next(err);
   }
 }
+
+export async function getAssignedHomework(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+    // 1. Get student profile to identify className and board
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.userId },
+    });
+    if (!student) return res.status(404).json({ message: 'Student profile not found.' });
+
+    // 2. Fetch all homework assignments matching the student's className and board
+    const homeworks = await prisma.homework.findMany({
+      where: {
+        subject: {
+          course: {
+            className: student.className,
+            board: student.board,
+          },
+        },
+      },
+      include: {
+        subject: true,
+        faculty: {
+          include: {
+            user: {
+              select: { name: true },
+            },
+          },
+        },
+        submissions: {
+          where: { studentId: student.id },
+        },
+      },
+      orderBy: { dueDate: 'asc' },
+    });
+
+    // 3. Format homework items, adding status based on submissions
+    const formatted = homeworks.map((hw) => {
+      const submission = hw.submissions[0];
+      return {
+        id: hw.id,
+        title: hw.title,
+        instructions: hw.instructions,
+        fileUrl: hw.fileUrl,
+        dueDate: hw.dueDate,
+        createdAt: hw.createdAt,
+        subjectName: hw.subject.name,
+        facultyName: hw.faculty.user.name,
+        isSubmitted: !!submission,
+        submissionStatus: submission ? submission.status : 'PENDING',
+        submissionMarks: submission ? submission.marks : null,
+        submissionFeedback: submission ? submission.feedback : null,
+      };
+    });
+
+    return res.json(formatted);
+  } catch (err) {
+    next(err);
+  }
+}
