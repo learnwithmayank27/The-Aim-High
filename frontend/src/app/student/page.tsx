@@ -472,6 +472,7 @@ function StudentDashboardContent() {
             </div>
           </div>
         </div>
+      </div>
       )}
 
       {tab === 'lectures' && (
