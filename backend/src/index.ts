@@ -33,12 +33,11 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allow cross-origin images/files
 }));
-const allowedOrigins = ['http://localhost:3000'];
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Dynamically approve the requesting origin to support localhost, Wi-Fi IPs, EC2, or custom domains
+    callback(null, true);
+  },
   credentials: true,
 }));
 app.use(morgan('dev'));
