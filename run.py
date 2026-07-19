@@ -206,6 +206,20 @@ def main():
         log_system("Frontend node_modules already exists. Skipping npm install.")
 
     # 6. Start backend & frontend concurrently
+    is_prod = sys.platform != "win32"
+    
+    if is_prod:
+        log_system("Production environment detected. Compiling backend and frontend bundles...")
+        try:
+            log_system("Compiling backend...")
+            subprocess.run("npm run build", shell=True, cwd=backend_dir, check=True)
+            log_system("Compiling frontend...")
+            subprocess.run("npm run build", shell=True, cwd=frontend_dir, check=True)
+            log_system("Compilation complete.")
+        except Exception as e:
+            log_error(f"Failed to build production bundles: {e}")
+            sys.exit(1)
+
     log_system("Launching backend and frontend servers concurrently...")
     
     # Unix-specific subprocess group settings
@@ -216,9 +230,12 @@ def main():
     backend_proc = None
     frontend_proc = None
     
+    backend_cmd = "npm run start" if is_prod else "npm run dev"
+    frontend_cmd = "npm run start" if is_prod else "npm run dev"
+    
     try:
-        backend_proc = subprocess.Popen("npm run dev", shell=True, cwd=backend_dir, **spawn_kwargs)
-        frontend_proc = subprocess.Popen("npm run dev", shell=True, cwd=frontend_dir, **spawn_kwargs)
+        backend_proc = subprocess.Popen(backend_cmd, shell=True, cwd=backend_dir, **spawn_kwargs)
+        frontend_proc = subprocess.Popen(frontend_cmd, shell=True, cwd=frontend_dir, **spawn_kwargs)
         
         # Start threads to stream output
         backend_thread = threading.Thread(target=stream_output, args=(backend_proc, log_backend), daemon=True)
