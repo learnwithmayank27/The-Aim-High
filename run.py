@@ -233,9 +233,16 @@ def main():
     backend_cmd = "npm run start" if is_prod else "npm run dev"
     frontend_cmd = "npm run start" if is_prod else "npm run dev"
     
+    # Set memory limits to prevent RAM exhaustion and slowness on small servers (EC2 t2.micro)
+    backend_env = os.environ.copy()
+    backend_env["NODE_OPTIONS"] = "--max-old-space-size=256"
+    
+    frontend_env = os.environ.copy()
+    frontend_env["NODE_OPTIONS"] = "--max-old-space-size=512"
+    
     try:
-        backend_proc = subprocess.Popen(backend_cmd, shell=True, cwd=backend_dir, **spawn_kwargs)
-        frontend_proc = subprocess.Popen(frontend_cmd, shell=True, cwd=frontend_dir, **spawn_kwargs)
+        backend_proc = subprocess.Popen(backend_cmd, shell=True, cwd=backend_dir, env=backend_env, **spawn_kwargs)
+        frontend_proc = subprocess.Popen(frontend_cmd, shell=True, cwd=frontend_dir, env=frontend_env, **spawn_kwargs)
         
         # Start threads to stream output
         backend_thread = threading.Thread(target=stream_output, args=(backend_proc, log_backend), daemon=True)
